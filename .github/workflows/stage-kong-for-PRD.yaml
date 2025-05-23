@@ -10,16 +10,15 @@ on:
       - .github/workflows/stage-kong-for-PRD.yaml
 
 jobs:
-
-#  this job is useful to debug workflows, see https://github.com/mheap/debug-artifact
-#  debug-artifacts:
-#    name: Upload Debug Artifacts
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Upload Debug Artifacts
-#        uses: mheap/debug-artifact@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #  this job is useful to debug workflows, see https://github.com/mheap/debug-artifact
+  #  debug-artifacts:
+  #    name: Upload Debug Artifacts
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Upload Debug Artifacts
+  #        uses: mheap/debug-artifact@v1
+  #        env:
+  #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   stage-kong-for-prd:
     name: Stage Kong changes for PRD
@@ -27,12 +26,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup deck
-        uses: kong/setup-deck@v1
+        uses: kong/setup-deck@v1.6.0 # Update to latest version
         with:
-          deck-version: '1.26.0'
+          deck-version: "1.45.0" # Update deck version
           wrapper: false
 
       - name: stage combined file for PRD
@@ -56,4 +55,3 @@ jobs:
           branch: "PRD/kong"
           labels: "PRD,kong"
           body: "Merging this PR will result in the following changes deployed to PRD \n\n ```\n${{env.DIFF}}\n```"
-

@@ -6,20 +6,19 @@ on:
       - main
       - workflow/**
     paths-ignore:
-      - 'PRD/**'
-      - 'platform/kong/.generated/kong.yaml'
+      - "PRD/**"
+      - "platform/kong/.generated/kong.yaml"
 
 jobs:
-
-#  this job is useful to debug workflows, see https://github.com/mheap/debug-artifact
-#  debug-artifacts:
-#    name: Upload Debug Artifacts
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Upload Debug Artifacts
-#        uses: mheap/debug-artifact@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #  this job is useful to debug workflows, see https://github.com/mheap/debug-artifact
+  #  debug-artifacts:
+  #    name: Upload Debug Artifacts
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Upload Debug Artifacts
+  #        uses: mheap/debug-artifact@v1
+  #        env:
+  #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   has-changes:
     name: Have specs, configurations, or pipeline files changed
@@ -30,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: dorny/paths-filter@v2
         id: changed-files
@@ -62,9 +61,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup deck
-        uses: kong/setup-deck@v1
+        uses: kong/setup-deck@v1.6.0 # Update to latest version
         with:
-          deck-version: '1.26.0'
+          deck-version: "1.45.0" # Update deck version
           wrapper: false
 
       - name: Convert Flights API to Kong
@@ -76,7 +75,6 @@ jobs:
             deck file patch flight-data/flights/kong/patches.yaml | \
             deck file add-tags -o .github/artifacts/kong/flight-data-flights-kong.yaml \
               --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
-
 
       - name: Convert Routes API to Kong
         # In two steps, convert the OpenAPI Spec to a Kong declarative configuration
@@ -145,7 +143,7 @@ jobs:
 
       - name: Upload Artifacts
         # Artifacts are the files that are built along the way of the pipeline but are not committed to the repo
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kong-configurations
           path: .github/artifacts/kong/*.yaml
