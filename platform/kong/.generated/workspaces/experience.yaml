@@ -1,0 +1,101 @@
+_format_version: "3.0"
+_plugin_configs: {}
+consumer_groups:
+- name: gold
+  tags:
+  - platform-repo-managed
+- name: lifetime
+  tags:
+  - platform-repo-managed
+- name: platinum
+  tags:
+  - platform-repo-managed
+- name: silver
+  tags:
+  - platform-repo-managed
+consumers:
+- groups:
+  - name: platinum
+  tags:
+  - platform-repo-managed
+  username: dfreese
+- groups:
+  - name: gold
+  tags:
+  - platform-repo-managed
+  username: jdoe
+- groups:
+  - name: silver
+  tags:
+  - platform-repo-managed
+  username: jsmith
+plugins:
+- config:
+    account_email: '{vault://env/acme/account_email}'
+    domains:
+    - api.kong-air.com
+    renew_threshold_days: 30
+  enabled: true
+  id: 85c9d396-5330-11ee-8c99-0242ac120002
+  name: acme
+  tags:
+  - platform-repo-managed
+services:
+- host: experience.kongair
+  id: f1c41796-5c88-419b-a391-baa0c2f62f0d
+  name: experience-service
+  path: /
+  plugins:
+  - _config: default-jwt
+    enabled: true
+    name: jwt
+    tags:
+    - platform-repo-managed
+  - config:
+      cache_ttl: 15
+      strategy: memory
+    name: graphql-proxy-cache-advanced
+    tags:
+    - platform-repo-managed
+  - config:
+      limit:
+      - 500
+      sync_rate: -1
+      window_size:
+      - 120
+    name: graphql-rate-limiting-advanced
+    tags:
+    - platform-repo-managed
+  port: 8084
+  protocol: http
+  routes:
+  - id: 52cc7a8f-8914-46aa-990d-ad07197d7fc9
+    methods:
+    - POST
+    name: experience-service_query
+    paths:
+    - ~/query$
+    plugins: []
+    protocols:
+    - https
+    regex_priority: 200
+    strip_path: false
+    tags:
+    - experience
+    - platform-repo-managed
+  tags:
+  - platform-repo-managed
+- name: acme-dummy-service
+  routes:
+  - hosts:
+    - api.kong-air.com
+    name: acme-dummy-route
+    paths:
+    - /.well-known/acme-challenge
+    protocols:
+    - http
+    tags:
+    - platform-repo-managed
+  tags:
+  - platform-repo-managed
+  url: http://127.0.0.1:65535

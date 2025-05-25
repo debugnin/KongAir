@@ -1,0 +1,164 @@
+_format_version: "3.0"
+_plugin_configs: {}
+consumer_groups:
+- name: gold
+  tags:
+  - platform-repo-managed
+- name: lifetime
+  tags:
+  - platform-repo-managed
+- name: platinum
+  tags:
+  - platform-repo-managed
+- name: silver
+  tags:
+  - platform-repo-managed
+consumers:
+- groups:
+  - name: platinum
+  tags:
+  - platform-repo-managed
+  username: dfreese
+- groups:
+  - name: gold
+  tags:
+  - platform-repo-managed
+  username: jdoe
+- groups:
+  - name: silver
+  tags:
+  - platform-repo-managed
+  username: jsmith
+plugins:
+- config:
+    account_email: '{vault://env/acme/account_email}'
+    domains:
+    - api.kong-air.com
+    renew_threshold_days: 30
+  enabled: true
+  id: 85c9d396-5330-11ee-8c99-0242ac120002
+  name: acme
+  tags:
+  - platform-repo-managed
+services:
+- host: flights.kongair
+  id: 0cef4d36-9c39-5ac2-9d9f-190d8ea8a252
+  name: flights-service
+  path: /
+  plugins: []
+  port: 8080
+  protocol: http
+  routes:
+  - id: 7b2dbd94-ec5b-5ae8-b6d5-4c8b16ce0b06
+    methods:
+    - GET
+    name: flights-service_get-flights
+    paths:
+    - ~/flights$
+    plugins: []
+    regex_priority: 200
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  - id: 3210c3ed-9976-500d-ac03-07eaac972ad0
+    methods:
+    - GET
+    name: flights-service_get-flight-by-number
+    paths:
+    - ~/flights/(?<flightnumber>[^#?/]+)$
+    plugins: []
+    regex_priority: 100
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  - id: 08020aa2-6106-59ec-903a-3459e7cbb629
+    methods:
+    - GET
+    name: flights-service_get-flight-details
+    paths:
+    - ~/flights/(?<flightnumber>[^#?/]+)/details$
+    plugins: []
+    regex_priority: 100
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  - id: a5023323-0468-5a77-baf2-13578fec61b0
+    methods:
+    - GET
+    name: flights-service_health_get
+    paths:
+    - ~/health$
+    plugins: []
+    regex_priority: 200
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  tags:
+  - flight-data
+  - platform-repo-managed
+- host: routes.kongair
+  id: 5bbc0ad8-3b7c-5dfe-a676-b28f30523a6f
+  name: routes-service
+  path: /
+  plugins: []
+  port: 8081
+  protocol: http
+  routes:
+  - id: 4da7a5e5-9e69-59af-a6c3-46a675c5bac6
+    methods:
+    - GET
+    name: routes-service_health_get
+    paths:
+    - ~/health$
+    plugins: []
+    regex_priority: 200
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  - id: 89f28ad3-74db-5149-8fa5-f7fffbfda79c
+    methods:
+    - GET
+    name: routes-service_get-routes
+    paths:
+    - ~/routes$
+    plugins: []
+    regex_priority: 200
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  - id: 831bf89a-08be-5dbd-bcd2-aa2348d784d3
+    methods:
+    - GET
+    name: routes-service_get-route
+    paths:
+    - ~/routes/(?<id>[^#?/]+)$
+    plugins: []
+    regex_priority: 100
+    strip_path: false
+    tags:
+    - flight-data
+    - platform-repo-managed
+  tags:
+  - flight-data
+  - platform-repo-managed
+- name: acme-dummy-service
+  routes:
+  - hosts:
+    - api.kong-air.com
+    name: acme-dummy-route
+    paths:
+    - /.well-known/acme-challenge
+    protocols:
+    - http
+    tags:
+    - platform-repo-managed
+  tags:
+  - platform-repo-managed
+  url: http://127.0.0.1:65535
+upstreams: []
