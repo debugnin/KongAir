@@ -1,0 +1,115 @@
+name: Deploy Kong Workspaces
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "platform/kong/.generated/workspaces/*.yaml"
+  workflow_dispatch:
+
+jobs:
+  deploy-flight-data:
+    name: Deploy Flight-data Workspace
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup deck
+        uses: kong/setup-deck@v1.6.0
+        with:
+          deck-version: "1.45.0"
+          wrapper: false
+
+      - name: Check Flight-data Changes
+        id: check-flight-data
+        run: |
+          DIFF_OUTPUT=$(deck diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+            --workspace flight-data \
+            --headers "kong-admin-token:${{ secrets.FLIGHT_DATA_ADMIN_TOKEN }}" \
+            platform/kong/.generated/workspaces/flight-data.yaml || true)
+          
+          if [[ -z "$DIFF_OUTPUT" || "$DIFF_OUTPUT" == *"no change"* ]]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Flight-data Configuration
+        if: steps.check-flight-data.outputs.has_changes == 'true'
+        run: |
+          deck sync --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+            --workspace flight-data \
+            --headers "kong-admin-token:${{ secrets.FLIGHT_DATA_ADMIN_TOKEN }}" \
+            platform/kong/.generated/workspaces/flight-data.yaml
+
+  deploy-sales:
+    name: Deploy Sales Workspace
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup deck
+        uses: kong/setup-deck@v1.6.0
+        with:
+          deck-version: "1.45.0"
+          wrapper: false
+
+      - name: Check Sales Changes
+        id: check-sales
+        run: |
+          DIFF_OUTPUT=$(deck diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+            --workspace sales \
+            --headers "kong-admin-token:${{ secrets.SALES_ADMIN_TOKEN }}" \
+            platform/kong/.generated/workspaces/sales.yaml || true)
+          
+          if [[ -z "$DIFF_OUTPUT" || "$DIFF_OUTPUT" == *"no change"* ]]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Sales Configuration
+        if: steps.check-sales.outputs.has_changes == 'true'
+        run: |
+          deck sync --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+            --workspace sales \
+            --headers "kong-admin-token:${{ secrets.SALES_ADMIN_TOKEN }}" \
+            platform/kong/.generated/workspaces/sales.yaml
+
+  deploy-experience:
+    name: Deploy Experience Workspace
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup deck
+        uses: kong/setup-deck@v1.6.0
+        with:
+          deck-version: "1.45.0"
+          wrapper: false
+
+      - name: Check Experience Changes
+        id: check-experience
+        run: |
+          DIFF_OUTPUT=$(deck diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+            --workspace experience \
+            --headers "kong-admin-token:${{ secrets.EXPERIENCE_ADMIN_TOKEN }}" \
+            platform/kong/.generated/workspaces/experience.yaml || true)
+          
+          if [[ -z "$DIFF_OUTPUT" || "$DIFF_OUTPUT" == *"no change"* ]]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy Experience Configuration
+        if: steps.check-experience.outputs.has_changes == 'true'
+        run: |
+          deck sync --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+            --workspace experience \
+            --headers "kong-admin-token:${{ secrets.EXPERIENCE_ADMIN_TOKEN }}" \
+            platform/kong/.generated/workspaces/experience.yaml

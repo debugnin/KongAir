@@ -1,0 +1,148 @@
+name: Stage changes for Kong with Workspaces
+
+on:
+  push:
+    branches:
+      - main
+      - workflow/**
+    paths-ignore:
+      - "PRD/**"
+      - "platform/kong/.generated/workspaces/*.yaml"
+
+jobs:
+  has-changes:
+    name: Have specs, configurations, or pipeline files changed
+    runs-on: ubuntu-latest
+
+    outputs:
+      are-changes: ${{ steps.changed-files.outputs.files }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v2
+        id: changed-files
+        with:
+          filters: |
+            files:
+              - '.github/workflows/stage-changes-for-kong-with-workspaces.yaml'
+              - 'flight-data/flights/openapi.yaml'
+              - 'flight-data/flights/kong/**'
+              - 'flight-data/routes/openapi.yaml'
+              - 'flight-data/routes/kong/**'
+              - 'sales/bookings/openapi.yaml'
+              - 'sales/bookings/kong/**'
+              - 'sales/customer/openapi.yaml'
+              - 'sales/customer/kong/**'
+              - 'experience/kong/**'
+              - 'platform/kong/**'
+
+  oas-to-kong:
+    name: Convert OAS to Kong configurations with workspaces
+
+    needs: has-changes
+    if: ${{ needs.has-changes.outputs.are-changes == 'true' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup deck
+        uses: kong/setup-deck@v1.6.0
+        with:
+          deck-version: "1.45.0"
+          wrapper: false
+
+      - name: Create workspace directories
+        run: |
+          mkdir -p .github/artifacts/kong/flight-data
+          mkdir -p .github/artifacts/kong/sales
+          mkdir -p .github/artifacts/kong/experience
+          mkdir -p .github/artifacts/kong/platform
+          mkdir -p platform/kong/.generated/workspaces
+
+      # Generate platform base configuration
+      - name: Generate Platform Base Configuration
+        run: |
+          deck file merge \
+            platform/kong/platform-kong-base.yaml \
+            platform/kong/consumers/* \
+            platform/kong/plugins/* \
+            platform/kong/vaults/* \
+            -o .github/artifacts/kong/platform/platform-base.yaml
+
+      # Flight-data team workspace
+      - name: Convert Flights API to Kong
+        run: |
+          deck file openapi2kong -s flight-data/flights/openapi.yaml | \
+            deck file patch flight-data/flights/kong/patches.yaml | \
+            deck file add-tags -o .github/artifacts/kong/flight-data/flights-kong.yaml \
+              --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
+
+      - name: Convert Routes API to Kong
+        run: |
+          deck file openapi2kong -s flight-data/routes/openapi.yaml | \
+            deck file patch flight-data/routes/kong/patches.yaml | \
+            deck file add-tags -o .github/artifacts/kong/flight-data/routes-kong.yaml \
+              --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
+
+      - name: Combine Flight-data Kong Configurations with Platform
+        run: |
+          deck file merge \
+            .github/artifacts/kong/flight-data/*.yaml \
+            .github/artifacts/kong/platform/platform-base.yaml | \
+          deck file patch platform/kong/patches.yaml | \
+          deck file add-tags \
+            -o platform/kong/.generated/workspaces/flight-data.yaml \
+            "platform-repo-managed"
+
+      # Sales team workspace
+      - name: Convert Bookings API to Kong
+        run: |
+          deck file openapi2kong -s sales/bookings/openapi.yaml | \
+            deck file patch sales/bookings/kong/patches.yaml | \
+            deck file add-tags -o .github/artifacts/kong/sales/bookings-kong.yaml \
+              --selector "$.services[*]" --selector "$.services[*].routes[*]" sales
+
+      - name: Convert Customers API to Kong
+        run: |
+          deck file openapi2kong -s sales/customer/openapi.yaml | \
+            deck file patch sales/customer/kong/patches.yaml | \
+            deck file add-tags -o .github/artifacts/kong/sales/customer-kong.yaml \
+              --selector "$.services[*]" --selector "$.services[*].routes[*]" sales
+
+      - name: Combine Sales Kong Configurations with Platform
+        run: |
+          deck file merge \
+            .github/artifacts/kong/sales/*.yaml \
+            .github/artifacts/kong/platform/platform-base.yaml | \
+          deck file patch platform/kong/patches.yaml | \
+          deck file add-tags \
+            -o platform/kong/.generated/workspaces/sales.yaml \
+            "platform-repo-managed"
+
+      # Experience team workspace
+      - name: Create Experience API Configurations with Platform
+        run: |
+          deck file merge \
+            experience/kong/experience-service.yaml \
+            .github/artifacts/kong/platform/platform-base.yaml | \
+          deck file patch platform/kong/patches.yaml | \
+          deck file add-tags \
+            -o platform/kong/.generated/workspaces/experience.yaml \
+            "platform-repo-managed"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kong-configurations
+          path: |
+            platform/kong/.generated/workspaces/*.yaml
+
+      - name: Create PR for changed Kong Gateway Configuration
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: Stage Kong Gateway Configuration with Workspaces
