@@ -1,43 +1,44 @@
 _format_version: "3.0"
 _plugin_configs: {}
-consumer_groups:
-- name: gold
-  tags:
-  - platform-repo-managed
-- name: lifetime
-  tags:
-  - platform-repo-managed
-- name: platinum
-  tags:
-  - platform-repo-managed
-- name: silver
-  tags:
-  - platform-repo-managed
-consumers:
-- groups:
-  - name: platinum
-  tags:
-  - platform-repo-managed
-  username: dfreese
-- groups:
-  - name: gold
-  tags:
-  - platform-repo-managed
-  username: jdoe
-- groups:
-  - name: silver
-  tags:
-  - platform-repo-managed
-  username: jsmith
 plugins:
 - config:
-    account_email: '{vault://env/acme/account_email}'
-    domains:
-    - api.kong-air.com
-    renew_threshold_days: 30
+    bandwidth_metrics: true
+    latency_metrics: true
+    per_consumer: true
+    status_code_metrics: true
+    upstream_health_metrics: true
   enabled: true
-  id: 85c9d396-5330-11ee-8c99-0242ac120002
-  name: acme
+  name: prometheus
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+  tags:
+  - platform-repo-managed
+- config:
+    cache_ttl: 300
+    redis:
+      host: kongrediscluster.a8slzh.0001.use1.cache.amazonaws.com
+      keepalive_pool_size: 512
+      port: 6379
+    strategy: redis
+  name: proxy-cache-advanced
+  tags:
+  - platform-repo-managed
+- config:
+    limit:
+    - 2000
+    namespace: rls_ns_global
+    redis:
+      host: kongrediscluster.a8slzh.0001.use1.cache.amazonaws.com
+      keepalive_pool_size: 1024
+      port: 6379
+    strategy: redis
+    sync_rate: 0.5
+    window_size:
+    - 60
+  name: rate-limiting-advanced
   tags:
   - platform-repo-managed
 services:
@@ -85,17 +86,3 @@ services:
     - platform-repo-managed
   tags:
   - platform-repo-managed
-- name: acme-dummy-service
-  routes:
-  - hosts:
-    - api.kong-air.com
-    name: acme-dummy-route
-    paths:
-    - /.well-known/acme-challenge
-    protocols:
-    - http
-    tags:
-    - platform-repo-managed
-  tags:
-  - platform-repo-managed
-  url: http://127.0.0.1:65535
