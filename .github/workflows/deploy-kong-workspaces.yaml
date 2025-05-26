@@ -25,10 +25,10 @@ jobs:
       - name: Check Flight-data Changes
         id: check-flight-data
         run: |
-          DIFF_OUTPUT=$(deck diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+          DIFF_OUTPUT=$(deck gateway diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
             --workspace flight-data \
             --headers "kong-admin-token:${{ secrets.FLIGHT_DATA_ADMIN_TOKEN }}" \
-            platform/kong/.generated/workspaces/flight-data.yaml || true)
+            platform/kong/.generated/workspaces/flight-data.yaml)
 
           if [[ -z "$DIFF_OUTPUT" || "$DIFF_OUTPUT" == *"no change"* ]]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -60,10 +60,10 @@ jobs:
       - name: Check Sales Changes
         id: check-sales
         run: |
-          DIFF_OUTPUT=$(deck diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+          DIFF_OUTPUT=$(deck gateway diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
             --workspace sales \
             --headers "kong-admin-token:${{ secrets.SALES_ADMIN_TOKEN }}" \
-            platform/kong/.generated/workspaces/sales.yaml || true)
+            platform/kong/.generated/workspaces/sales.yaml)
 
           if [[ -z "$DIFF_OUTPUT" || "$DIFF_OUTPUT" == *"no change"* ]]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -95,10 +95,10 @@ jobs:
       - name: Check Experience Changes
         id: check-experience
         run: |
-          DIFF_OUTPUT=$(deck diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+          DIFF_OUTPUT=$(deck gateway diff --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
             --workspace experience \
             --headers "kong-admin-token:${{ secrets.EXPERIENCE_ADMIN_TOKEN }}" \
-            platform/kong/.generated/workspaces/experience.yaml || true)
+            platform/kong/.generated/workspaces/experience.yaml)
 
           if [[ -z "$DIFF_OUTPUT" || "$DIFF_OUTPUT" == *"no change"* ]]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
