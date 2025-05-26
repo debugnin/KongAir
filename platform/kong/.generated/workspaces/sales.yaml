@@ -3,6 +3,7 @@ _plugin_configs:
   default-jwt:
     key_claim_name: iss
     secret_is_base64: false
+_workspace: sales
 plugins:
 - config:
     bandwidth_metrics: true
