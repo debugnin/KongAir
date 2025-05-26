@@ -1,0 +1,9 @@
+rules:
+  service-https-check:
+    description: "Ensure https usage in Kong GW Services"
+    given: $.services[*].protocol
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "^http$"
