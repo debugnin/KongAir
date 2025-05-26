@@ -10,8 +10,6 @@ plugins:
   enabled: true
   name: prometheus
   protocols:
-  - grpc
-  - grpcs
   - http
   - https
   tags:
