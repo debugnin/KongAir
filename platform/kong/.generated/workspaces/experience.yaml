@@ -1,5 +1,8 @@
 _format_version: "3.0"
-_plugin_configs: {}
+_plugin_configs:
+  default-jwt:
+    key_claim_name: iss
+    secret_is_base64: false
 plugins:
 - config:
     bandwidth_metrics: true
