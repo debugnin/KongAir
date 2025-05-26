@@ -3,13 +3,13 @@
 
 _format_version: "3.0"
 
+# Any final patches the Platform team may want to apply should go here
 patches:
-  # Example: Add a global rate limiting plugin to all services
-  # - selectors:
-  #   - $.services[*]
-  #   values:
-  #     plugins:
-  #       - name: rate-limiting
-  #         config:
-  #           minute: 100
-  #           policy: local
+  # Add defaults for plugin configurations that the teams
+  # can use easily
+  - selectors:
+      - $._plugin_configs
+    values:
+      default-jwt:
+        key_claim_name: "iss"
+        secret_is_base64: false
