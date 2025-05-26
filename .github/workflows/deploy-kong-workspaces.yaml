@@ -113,3 +113,11 @@ jobs:
             --workspace experience \
             --headers "kong-admin-token:${{ secrets.EXPERIENCE_ADMIN_TOKEN }}" \
             platform/kong/.generated/workspaces/experience.yaml
+
+      # - name: Publish to Dev Portal
+      #   if: steps.check-experience.outputs.has_changes == 'true'
+      #   run: |
+      #     deck portal publish --kong-addr ${{ secrets.KONG_ADMIN_URL }} \
+      #       --workspace experience \
+      #       --headers "kong-admin-token:${{ secrets.EXPERIENCE_ADMIN_TOKEN }}" \
+      #       platform/kong/.generated/workspaces/experience.yaml

@@ -68,23 +68,23 @@ jobs:
       - name: Generate Platform Base Configuration
         run: |
           deck file merge \
-            platform/kong/platform-kong-base.yaml \
-            platform/kong/plugins/* \
-            platform/kong/vaults/* \
+            platform/kong/base/platform-kong-base.yaml \
+            platform/kong/base/plugins/* \
+            platform/kong/base/vaults/* \
             -o .github/artifacts/kong/platform/platform-base.yaml
 
       # Flight-data team workspace
       - name: Convert Flights API to Kong
         run: |
           deck file openapi2kong -s flight-data/flights/openapi.yaml | \
-            deck file patch flight-data/flights/kong/patches.yaml | \
+            deck file patch flight-data/flights/kong/patches/patches.yaml | \
             deck file add-tags -o .github/artifacts/kong/flight-data/flights-kong.yaml \
               --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
 
       - name: Convert Routes API to Kong
         run: |
           deck file openapi2kong -s flight-data/routes/openapi.yaml | \
-            deck file patch flight-data/routes/kong/patches.yaml | \
+            deck file patch flight-data/routes/kong/patches/patches.yaml | \
             deck file add-tags -o .github/artifacts/kong/flight-data/routes-kong.yaml \
               --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
 
@@ -95,7 +95,7 @@ jobs:
           deck file merge \
             .github/artifacts/kong/flight-data/*.yaml \
             .github/artifacts/kong/platform/platform-base.yaml | \
-          deck file patch platform/kong/patches.yaml | \
+          deck file patch platform/kong/patches/patches.yaml | \
           deck file add-tags \
             -o platform/kong/.generated/workspaces/$WORKSPACE.yaml \
             "platform-repo-managed"
@@ -106,7 +106,7 @@ jobs:
           WORKSPACE: flight-data
         run: |
           deck file validate platform/kong/.generated/workspaces/$WORKSPACE.yaml
-          deck file lint -s platform/kong/.generated/workspaces/$WORKSPACE.yaml platform/kong/ruleset.yaml
+          deck file lint -s platform/kong/.generated/workspaces/$WORKSPACE.yaml platform/kong/linting/ruleset.yaml
 
       # Sales team workspace
       - name: Convert Bookings API to Kong
@@ -141,7 +141,7 @@ jobs:
           WORKSPACE: sales
         run: |
           deck file validate platform/kong/.generated/workspaces/$WORKSPACE.yaml
-          deck file lint -s platform/kong/.generated/workspaces/$WORKSPACE.yaml platform/kong/ruleset.yaml
+          deck file lint -s platform/kong/.generated/workspaces/$WORKSPACE.yaml platform/kong/linting/ruleset.yaml
 
       # Experience team workspace
       - name: Create Experience API Configurations with Platform
@@ -162,7 +162,7 @@ jobs:
           WORKSPACE: experience
         run: |
           deck file validate platform/kong/.generated/workspaces/${WORKSPACE}.yaml
-          deck file lint -s platform/kong/.generated/workspaces/${WORKSPACE}.yaml platform/kong/ruleset.yaml
+          deck file lint -s platform/kong/.generated/workspaces/${WORKSPACE}.yaml platform/kong/linting/ruleset.yaml
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
