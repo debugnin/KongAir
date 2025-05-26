@@ -1,0 +1,4 @@
+# This will be used as the base file for the Kong configuration.
+_format_version: "3.0"
+_workspace: "${WORKSPACE}"
+_plugin_configs: {}

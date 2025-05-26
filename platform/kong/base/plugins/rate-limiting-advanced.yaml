@@ -1,0 +1,16 @@
+_format_version: "3.0"
+
+plugins:
+  - name: rate-limiting-advanced
+    config:
+      limit:
+        - 2000
+      window_size:
+        - 60
+      sync_rate: 0.5
+      namespace: rls_ns_global
+      strategy: redis
+      redis:
+        host: kongrediscluster.a8slzh.0001.use1.cache.amazonaws.com
+        port: 6379
+        keepalive_pool_size: 1024

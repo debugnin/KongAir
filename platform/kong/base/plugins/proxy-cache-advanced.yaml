@@ -1,0 +1,11 @@
+_format_version: "3.0"
+
+plugins:
+  - name: proxy-cache-advanced
+    config:
+      strategy: redis
+      cache_ttl: 300
+      redis:
+        host: kongrediscluster.a8slzh.0001.use1.cache.amazonaws.com
+        port: 6379
+        keepalive_pool_size: 512
