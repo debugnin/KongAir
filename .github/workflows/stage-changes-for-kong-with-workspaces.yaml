@@ -89,14 +89,24 @@ jobs:
               --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
 
       - name: Combine Flight-data Kong Configurations with Platform
+        env:
+          WORKSPACE: flight-data
         run: |
           deck file merge \
             .github/artifacts/kong/flight-data/*.yaml \
             .github/artifacts/kong/platform/platform-base.yaml | \
           deck file patch platform/kong/patches.yaml | \
           deck file add-tags \
-            -o platform/kong/.generated/workspaces/flight-data.yaml \
+            -o platform/kong/.generated/workspaces/$WORKSPACE.yaml \
             "platform-repo-managed"
+          sed -i "s/\${WORKSPACE}/$WORKSPACE/g" platform/kong/.generated/workspaces/$WORKSPACE.yaml
+
+      - name: Validate and Lint Flight-data Configuration
+        env:
+          WORKSPACE: flight-data
+        run: |
+          deck file validate platform/kong/.generated/workspaces/$WORKSPACE.yaml
+          deck file lint -s platform/kong/.generated/workspaces/$WORKSPACE.yaml platform/kong/ruleset.yaml
 
       # Sales team workspace
       - name: Convert Bookings API to Kong
@@ -114,25 +124,45 @@ jobs:
               --selector "$.services[*]" --selector "$.services[*].routes[*]" sales
 
       - name: Combine Sales Kong Configurations with Platform
+        env:
+          WORKSPACE: sales
         run: |
           deck file merge \
             .github/artifacts/kong/sales/*.yaml \
             .github/artifacts/kong/platform/platform-base.yaml | \
           deck file patch platform/kong/patches.yaml | \
           deck file add-tags \
-            -o platform/kong/.generated/workspaces/sales.yaml \
+            -o platform/kong/.generated/workspaces/$WORKSPACE.yaml \
             "platform-repo-managed"
+          sed -i "s/\${WORKSPACE}/$WORKSPACE/g" platform/kong/.generated/workspaces/$WORKSPACE.yaml
+
+      - name: Validate and Lint Sales Configuration
+        env:
+          WORKSPACE: sales
+        run: |
+          deck file validate platform/kong/.generated/workspaces/$WORKSPACE.yaml
+          deck file lint -s platform/kong/.generated/workspaces/$WORKSPACE.yaml platform/kong/ruleset.yaml
 
       # Experience team workspace
       - name: Create Experience API Configurations with Platform
+        env:
+          WORKSPACE: experience
         run: |
           deck file merge \
             experience/kong/experience-service.yaml \
             .github/artifacts/kong/platform/platform-base.yaml | \
           deck file patch platform/kong/patches.yaml | \
           deck file add-tags \
-            -o platform/kong/.generated/workspaces/experience.yaml \
+            -o platform/kong/.generated/workspaces/$WORKSPACE.yaml \
             "platform-repo-managed"
+          sed -i "s/\${WORKSPACE}/$WORKSPACE/g" platform/kong/.generated/workspaces/$WORKSPACE.yaml
+
+      - name: Validate and Lint Experience Configuration
+        env:
+          WORKSPACE: experience
+        run: |
+          deck file validate platform/kong/.generated/workspaces/${WORKSPACE}.yaml
+          deck file lint -s platform/kong/.generated/workspaces/${WORKSPACE}.yaml platform/kong/ruleset.yaml
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
