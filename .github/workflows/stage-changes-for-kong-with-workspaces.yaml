@@ -77,14 +77,14 @@ jobs:
       - name: Convert Flights API to Kong
         run: |
           deck file openapi2kong -s flight-data/flights/openapi.yaml | \
-            deck file patch flight-data/flights/kong/patches/patches.yaml | \
+            deck file patch flight-data/flights/kong/patches.yaml | \
             deck file add-tags -o .github/artifacts/kong/flight-data/flights-kong.yaml \
               --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
 
       - name: Convert Routes API to Kong
         run: |
           deck file openapi2kong -s flight-data/routes/openapi.yaml | \
-            deck file patch flight-data/routes/kong/patches/patches.yaml | \
+            deck file patch flight-data/routes/kong/patches.yaml | \
             deck file add-tags -o .github/artifacts/kong/flight-data/routes-kong.yaml \
               --selector "$.services[*]" --selector "$.services[*].routes[*]" flight-data
 
@@ -130,7 +130,7 @@ jobs:
           deck file merge \
             .github/artifacts/kong/sales/*.yaml \
             .github/artifacts/kong/platform/platform-base.yaml | \
-          deck file patch platform/kong/patches.yaml | \
+          deck file patch platform/kong/patches/patches.yaml | \
           deck file add-tags \
             -o platform/kong/.generated/workspaces/$WORKSPACE.yaml \
             "platform-repo-managed"
@@ -151,7 +151,7 @@ jobs:
           deck file merge \
             experience/kong/experience-service.yaml \
             .github/artifacts/kong/platform/platform-base.yaml | \
-          deck file patch platform/kong/patches.yaml | \
+          deck file patch platform/kong/patches/patches.yaml | \
           deck file add-tags \
             -o platform/kong/.generated/workspaces/$WORKSPACE.yaml \
             "platform-repo-managed"
